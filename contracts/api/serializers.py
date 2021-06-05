@@ -10,6 +10,11 @@ class ContractSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contract
         fields = ('id', 'contract_number', 'region','timestamp','user','seller','customer')
+        extra_kwargs={
+            "region":{"required":True},
+            "seller":{"required":True},
+            "customer":{"required":True},
+        }
     
     def get_user(self,obj):
         return UserSerializer(obj.user).data

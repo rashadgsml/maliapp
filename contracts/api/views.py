@@ -8,25 +8,30 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_2
 from django.http import Http404
 from .permissions import IsOwner
 from .utils import update_contract_number
-
-from django.conf.urls import url
-from rest_framework_swagger.views import get_swagger_view
-
-schema_view = get_swagger_view(title='Pastebin API')
-
-urlpatterns = [
-    url(r'^$', schema_view)
-]
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class ContractsView(APIView):
-    permission_classes = (IsAuthenticated, )
 
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ContractSerializer
+
+    
     def get(self, request, *args, **kwargs):
         queryset = Contract.objects.filter(user=request.user)
         serializer = ContractSerializer(queryset, many=True)
         return Response(serializer.data)
-    
+        
+    @swagger_auto_schema(request_body=openapi.Schema(
+                             type=openapi.TYPE_OBJECT,
+                             required=['region'],
+                             properties={
+                                 'region': openapi.Schema(type=openapi.TYPE_STRING)
+                             },
+                         ),
+                         operation_description='Description')
     def post(self, request, *args, **kwargs):
+        print(request.data)
         serializer = ContractSerializer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['user'] = request.user

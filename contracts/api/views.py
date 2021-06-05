@@ -9,6 +9,15 @@ from django.http import Http404
 from .permissions import IsOwner
 from .utils import update_contract_number
 
+from django.conf.urls import url
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='Pastebin API')
+
+urlpatterns = [
+    url(r'^$', schema_view)
+]
+
 class ContractsView(APIView):
     permission_classes = (IsAuthenticated, )
 

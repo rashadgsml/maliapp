@@ -1,19 +1,19 @@
 from rest_framework import serializers
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from ..models import Contract
-from .serializers import ContractSerializer
+from ..models import Contract,Person,JuridicalPerson,IndividualPerson
+from .serializers import ContractSerializer, JuridicalPersonSerializer, IndividualPersonSerializer
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from django.http import Http404
 from .permissions import IsOwner
-from .utils import update_contract_number
+from .utils import update_contract_number, create_person
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 class ContractsView(APIView):
 
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, IsOwner,)
     serializer_class = ContractSerializer
 
     
@@ -31,17 +31,21 @@ class ContractsView(APIView):
                          ),
                          operation_description='Description')
     def post(self, request, *args, **kwargs):
-        print(request.data)
         serializer = ContractSerializer(data=request.data)
         if serializer.is_valid():
+            
             serializer.validated_data['user'] = request.user
+            customer, seller = create_person(request.data)
+            serializer.validated_data['seller'] = seller
+            serializer.validated_data['customer'] = customer
+            
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class ContractDetail(APIView):
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsOwner,)
 
     def get_object(self, pk):
         try:

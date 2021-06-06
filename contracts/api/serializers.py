@@ -24,6 +24,8 @@ class ContractSerializer(serializers.ModelSerializer):
     
     def get_customer(self, obj):
         return PersonSerializer(obj.customer).data
+        
+
 
 class PersonSerializer(serializers.ModelSerializer):
     person = serializers.SerializerMethodField()
